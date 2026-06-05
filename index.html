@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eco Nativo Pro</title>
+    
+    <!-- Configuración PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e1e1e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <style>
+        :root {
+            --bg-dark: #1e1e1e;
+            --bg-light: #f0f2f5;
+            --accent: #007bff;
+            --conductor: #2d2d2d;
+            --cliente: #e3f2fd;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            user-select: none;
+        }
+
+        header { text-align: center; margin-bottom: 15px; margin-top: 10px; }
+        h1 { margin: 0; color: var(--bg-dark); font-size: 26px; display: flex; align-items: center; gap: 10px; }
+        .tagline { font-size: 12px; color: #666; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+
+        .lang-bar {
+            display: flex;
+            gap: 15px;
+            background: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .lang-btn {
+            font-size: 28px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            background: none;
+            border-radius: 50%;
+            padding: 2px;
+            transition: 0.3s;
+            line-height: 1;
+        }
+
+        .lang-btn.active { border-color: var(--accent); transform: scale(1.2); }
+
+        .main-card {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            border-radius: 25px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .status-badge {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: block;
+            text-align: center;
+        }
+
+        .voice-section {
+            background: var(--conductor);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+        }
+
+        .display-text {
+            font-size: 19px;
+            min-height: 50px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            font-style: italic;
+            color: #ddd;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn {
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn-blue { background: linear-gradient(135deg, #4285f4, #1a73e8); }
+        .btn-gray { background: linear-gradient(135deg, #5f6368, #3c4043); }
+        .recording { background: #d93025 !important; animation: pulse 1.5s infinite; }
+
+        .result-section {
+            background: var(--cliente);
+            padding: 20px;
+            border-radius: 20px;
+            border-left: 6px solid var(--accent);
+            display: none;
+            margin-top: 10px;
+        }
+
+        .result-label { font-size: 11px; color: var(--accent); font-weight: 800; }
+        .result-text { font-size: 22px; color: #1a202c; margin: 12px 0; font-weight: 600; }
+
+        .input-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 8px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        input[type="text"]:focus { border-color: var(--accent); }
+
+        .btn-send { background: var(--accent); width: 50px; flex-shrink: 0; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        
+        footer { margin-top: 30px; font-size: 11px; letter-spacing: 3px; color: #aaa; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🗣️ Eco Nativo Pro</h1>
+        <div class="tagline">Traductor Online de Ruta</div>
+    </header>
+
+    <div class="lang-bar">
+        <button class="lang-btn active" onclick="changeLang('en')" id="btn-en">🇬🇧</button>
+        <button class="lang-btn" onclick="changeLang('fr')" id="btn-fr">🇫🇷</button>
+        <button class="lang-btn" onclick="changeLang('de')" id="btn-de">🇩🇪</button>
+    </div>
+
+    <div class="main-card">
+        <span class="status-badge" id="directionText">Conductor (ES) ➔ Cliente (EN)</span>
+        
+        <div class="voice-section">
+            <div class="display-text" id="transcript">Listo para escuchar...</div>
+            <div class="btn-grid">
+                <button class="btn btn-blue" id="recordMe">🎙️ Mi Voz</button>
+                <button class="btn btn-gray" id="recordClient">🗣️ Cliente</button>
+            </div>
+        </div>
+
+        <div class="result-section" id="resultBox">
+            <div class="result-label" id="resultLabel">TRADUCCIÓN:</div>
+            <div class="result-text" id="translatedText">...</div>
+            <button class="btn btn-blue" style="width: auto; padding: 8px 20px; font-size: 12px;" onclick="replayAudio()">🔊 REPETIR VOZ</button>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="manualInput" placeholder="Escribe algo aquí...">
+            <button class="btn btn-send" onclick="translateManual()">OK</button>
+        </div>
+    </div>
+
+    <footer>MEDBASHA</footer>
+
+    <script>
+        // Registrar Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+
+        let targetLang = 'en';
+        let lastText = "";
+        let lastLangCode = "";
+
+        const langMeta = {
+            'en': { code: 'en-US', name: 'Inglés' },
+            'fr': { code: 'fr-FR', name: 'Francés' },
+            'de': { code: 'de-DE', name: 'Alemán' }
+        };
+
+        function changeLang(lang) {
+            targetLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${lang}`).classList.add('active');
+            updateBadge('me');
+        }
+
+        function updateBadge(speaker) {
+            const badge = document.getElementById('directionText');
+            badge.innerText = speaker === 'me' ? 
+                `Conductor (ES) ➔ Cliente (${targetLang.toUpperCase()})` : 
+                `Cliente (${targetLang.toUpperCase()}) ➔ Conductor (ES)`;
+        }
+
+        async function translateAny(text, from, to) {
+            try {
+                const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`);
+                const data = await response.json();
+                return data.responseData.translatedText;
+            } catch (error) { return "Error de red"; }
+        }
+
+        async function translateManual() {
+            const input = document.getElementById('manualInput');
+            const text = input.value.trim();
+            if(!text) return;
+            document.getElementById('transcript').innerText = text;
+            input.value = "";
+            const translation = await translateAny(text, 'es', targetLang);
+            showResult(translation, langMeta[targetLang].code);
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+
+        function startVoice(speaker) {
+            if(window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+            updateBadge(speaker);
+            recognition.lang = speaker === 'me' ? 'es-ES' : langMeta[targetLang].code;
+            
+            const btn = speaker === 'me' ? document.getElementById('recordMe') : document.getElementById('recordClient');
+            btn.classList.add('recording');
+            document.getElementById('transcript').innerText = "Escuchando...";
+
+            recognition.start();
+
+            recognition.onresult = async (event) => {
+                const text = event.results[0][0].transcript;
+                document.getElementById('transcript').innerText = text;
+                const from = speaker === 'me' ? 'es' : targetLang;
+                const to = speaker === 'me' ? targetLang : 'es';
+                const audioLang = speaker === 'me' ? langMeta[targetLang].code : 'es-ES';
+                const translation = await translateAny(text, from, to);
+                showResult(translation, audioLang);
+            };
+
+            recognition.onend = () => btn.classList.remove('recording');
+        }
+
+        function showResult(text, langCode) {
+            document.getElementById('translatedText').innerText = text;
+            document.getElementById('resultBox').style.display = "block";
+            lastText = text;
+            lastLangCode = langCode;
+            speak(text, langCode);
+        }
+
+        function speak(text, langCode) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = langCode;
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function replayAudio() { speak(lastText, lastLangCode); }
+
+        document.getElementById('recordMe').onclick = () => startVoice('me');
+        document.getElementById('recordClient').onclick = () => startVoice('client');
+    </script>
+</body>
+</html>
